@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">MoneyMouse</string>
+
+    <string name="title_home">Home</string>
+    <string name="title_income">Income</string>
+    <string name="title_expenses">Expenses</string>
+
+    <string name="saved_income_key">saved_income_key</string>
+    <string name="saved_expenses_key">saved_expenses_key</string>
+    <string name="saved_newMoney_key">saved_newMoney_key</string>
+    <string name="saved_newExpense_key">saved_newExpense_key</string>
+
+    <string name="monthlyIncome">Monthly Income</string>
+    <string name="newMoney">New Money</string>
+    <string name="newExpense">New Expense</string>
+
+    <string name="monthlyExpenses">Monthly Expenses</string>
+
+
+</resources>
