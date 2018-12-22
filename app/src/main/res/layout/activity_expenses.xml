@@ -20,7 +20,8 @@
             app:layout_constraintTop_toTopOf="parent" android:layout_marginBottom="5dp"
             app:layout_constraintBottom_toTopOf="@+id/navigation" app:layout_constraintHorizontal_bias="0.503"
             app:layout_constraintVertical_bias="0.506" android:hint="@string/newExpense"
-            android:importantForAutofill="no" tools:targetApi="o" android:id="@+id/newExpenseBox"/>
+            android:importantForAutofill="no" tools:targetApi="o" android:id="@+id/newExpenseBox"
+            android:textSize="24sp"/>
     <android.support.design.widget.BottomNavigationView
             android:id="@+id/navigation"
             android:layout_width="0dp"
@@ -45,6 +46,6 @@
             app:layout_constraintTop_toTopOf="parent" android:layout_marginBottom="5dp"
             app:layout_constraintBottom_toTopOf="@+id/navigation" app:layout_constraintHorizontal_bias="0.503"
             app:layout_constraintVertical_bias="0.135" android:hint="@string/monthlyExpenses"
-            android:importantForAutofill="no" tools:targetApi="o"/>
+            android:importantForAutofill="no" tools:targetApi="o" android:textSize="24sp"/>
 
 </android.support.constraint.ConstraintLayout>

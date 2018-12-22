@@ -64,7 +64,7 @@ class IncomeActivity : AppCompatActivity() {
 
         if(monthlyIncome.text.toString() == "")
         {
-            monthlyIncome.setText("0.00")
+            monthlyIncome.setText(R.string.zero_point_zero_zero)
         }
 
 
@@ -72,7 +72,7 @@ class IncomeActivity : AppCompatActivity() {
             getString(R.string.saved_income_key), Context.MODE_PRIVATE) ?: return
         with (incomePref.edit()) {
             putString(getString(R.string.saved_income_key), BigDecimal(monthlyIncome.text.toString()).format(2).toString())
-            commit()
+            apply()
         }
 
         if(newMoneyBox.text.toString() == "0" || newMoneyBox.text.toString() == "" || newMoneyBox.text.toString() == "0.0" || newMoneyBox.text.toString() == "0.00")
@@ -83,17 +83,17 @@ class IncomeActivity : AppCompatActivity() {
         {
             val newMoney1Pref = getSharedPreferences(
                 getString(R.string.saved_newMoney_key), Context.MODE_PRIVATE) ?: return
-            val newMoney: BigDecimal = newMoney1Pref.getString(getString(R.string.saved_newMoney_key), "0").toBigDecimal()
+            val newMoney: String? = newMoney1Pref.getString(getString(R.string.saved_newMoney_key), "0")
 
             val newMoney2Pref = getSharedPreferences(
                 getString(R.string.saved_newMoney_key), Context.MODE_PRIVATE) ?: return
             with (newMoney2Pref.edit()) {
-                putString(getString(R.string.saved_newMoney_key), (BigDecimal(newMoneyBox.text.toString()) + newMoney).format(2).toString())
-                commit()
+                putString(getString(R.string.saved_newMoney_key), (BigDecimal(newMoneyBox.text.toString()) + BigDecimal(newMoney)).format(2).toString())
+                apply()
             }
         }
     }
 
-    fun BigDecimal.format(digits: Int) = java.lang.String.format("%.${digits}f", this)
+    private fun BigDecimal.format(digits: Int) = java.lang.String.format("%.${digits}f", this)
 
 }

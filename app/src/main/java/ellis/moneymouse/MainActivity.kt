@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -47,26 +48,27 @@ class MainActivity : AppCompatActivity() {
 
     private fun moneyForToday() {
 
+        val cal: Calendar = Calendar.getInstance()
+
         val incomePref = getSharedPreferences(
             getString(R.string.saved_income_key), Context.MODE_PRIVATE) ?: return
-        val monthlyInc: BigDecimal = incomePref.getString(getString(R.string.saved_income_key), "0.00").toBigDecimal()
+        val monthlyInc: String? = incomePref.getString(getString(R.string.saved_income_key), "0.00")
 
         val expPref = getSharedPreferences(
             getString(R.string.saved_expenses_key), Context.MODE_PRIVATE) ?: return
-        val monthlyExp: BigDecimal = expPref.getString(getString(R.string.saved_expenses_key), "0.00").toBigDecimal()
+        val monthlyExp: String? = expPref.getString(getString(R.string.saved_expenses_key), "0.00")
 
         val newMoneyPref = getSharedPreferences(
             getString(R.string.saved_newMoney_key), Context.MODE_PRIVATE) ?: return
-        val newMoney: BigDecimal = newMoneyPref.getString(getString(R.string.saved_newMoney_key), "0.00").toBigDecimal()
+        val newMoney: String? = newMoneyPref.getString(getString(R.string.saved_newMoney_key), "0.00")
 
         val newExpensePref = getSharedPreferences(
             getString(R.string.saved_newExpense_key), Context.MODE_PRIVATE) ?: return
-        val newExpense: BigDecimal = newExpensePref.getString(getString(R.string.saved_newExpense_key), "0.00").toBigDecimal()
+        val newExpense: String? = newExpensePref.getString(getString(R.string.saved_newExpense_key), "0.00")
 
-        //val temp = newMoney / (BigDecimal(31.0) - BigDecimal(Date().date))
-        val newMoneyVal = (monthlyInc - monthlyExp) / BigDecimal(31.0)
+        val newMoneyVal = (BigDecimal(monthlyInc) - BigDecimal(monthlyExp)) / BigDecimal(cal.getActualMaximum(Calendar.DAY_OF_MONTH))
 
-        val todayMoneyVal = (BigDecimal(Date().date) * (newMoneyVal)) + newMoney - newExpense
+        val todayMoneyVal = (BigDecimal(cal.get(Calendar.DAY_OF_MONTH)) * (newMoneyVal)) + BigDecimal(newMoney) - BigDecimal(newExpense)
 
         val todayMoneyValString = "$" + todayMoneyVal.toString()
 
@@ -79,20 +81,20 @@ class MainActivity : AppCompatActivity() {
             todayMoney.setTextColor(Color.parseColor("#008000"))
         }
 
-        todayMoney.setText(todayMoneyValString)
+        todayMoney.text = todayMoneyValString
 
         if(newMoneyVal < BigDecimal(0))
         {
             newMoneyBox.setTextColor(Color.RED)
-            newMoneyBox.setText("Losing " + newMoneyVal.toString() + " per day")
+            newMoneyBox.text = getString(R.string.main_message_losing, newMoneyVal.toString())
         }
         else
         {
             newMoneyBox.setTextColor(Color.parseColor("#008000"))
-            newMoneyBox.setText("Gaining " + newMoneyVal.toString() + " per day")
+            newMoneyBox.text = getString(R.string.main_message_gaining, newMoneyVal.toString())
         }
 
-        Log.d("The Date is: ", Date().date.toString())
+        //Log.d("days in this month", cal.getActualMaximum(Calendar.DAY_OF_MONTH).toString())
 
     }
 
