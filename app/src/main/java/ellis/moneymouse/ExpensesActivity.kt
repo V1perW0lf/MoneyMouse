@@ -1,10 +1,13 @@
 package ellis.moneymouse
 
+import android.arch.persistence.room.Room
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
 import android.support.v7.app.AppCompatActivity
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import kotlinx.android.synthetic.main.activity_expenses.*
 import java.math.BigDecimal
 
@@ -38,53 +41,39 @@ class ExpensesActivity : AppCompatActivity() {
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
         navigation.selectedItemId = R.id.navigation_expenses
 
-        val expPref = getSharedPreferences(
-            getString(R.string.saved_expenses_key), Context.MODE_PRIVATE)
+        val db = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java, "MoneyMouseDB"
+        ).allowMainThreadQueries().build()
 
-        val monthlyExp = expPref.getString(getString(R.string.saved_expenses_key), "0.00")
+        monthlyExpensesBox.setText(BigDecimal(db.userDao().getMonthlyExpenses().toString()).format(2))
 
-        if (monthlyExp == "0.00")
+        if(monthlyExpensesBox.text.toString() == "0.0")
         {
-            monthlyExpenses.setText("")
-        }
-        else
-        {
-            monthlyExpenses.setText(monthlyExp)
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-
-
-        if(monthlyExpenses.text.toString() == "")
-        {
-            monthlyExpenses.setText(R.string.zero_point_zero_zero)
+            monthlyExpensesBox.setText("")
         }
 
-        val expPref = getSharedPreferences(
-            getString(R.string.saved_expenses_key), Context.MODE_PRIVATE) ?: return
-        with (expPref.edit()) {
-            putString(getString(R.string.saved_expenses_key), BigDecimal(monthlyExpenses.text.toString()).format(2).toString())
-            apply()
-        }
-
-        if(newExpenseBox.text.toString() == "0" || newExpenseBox.text.toString() == "" || newExpenseBox.text.toString() == "0.0" || newExpenseBox.text.toString() == "0.00")
-        {
-
-        }
-        else
-        {
-            val newExpense1Pref = getSharedPreferences(
-                getString(R.string.saved_newExpense_key), Context.MODE_PRIVATE) ?: return
-            val newExpense: String? = newExpense1Pref.getString(getString(R.string.saved_newExpense_key), "0.00")
-
-            val newExpense2Pref = getSharedPreferences(
-                getString(R.string.saved_newExpense_key), Context.MODE_PRIVATE) ?: return
-            with (newExpense2Pref.edit()) {
-                putString(getString(R.string.saved_newExpense_key), (BigDecimal(newExpenseBox.text.toString()) + BigDecimal(newExpense)).format(2).toString())
-                apply()
+        monthlyExpensesBox.setOnEditorActionListener { v, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                val monthlyExpensesVal = monthlyExpensesBox.text.toString()
+                db.userDao().updateMonthlyExpenses(monthlyExpensesVal.toDouble())
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(v.windowToken, 0)
+                return@setOnEditorActionListener true
             }
+            false
+        }
+
+        newExpenseBox.setOnEditorActionListener { v, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                val newExpenseVal = newExpenseBox.text.toString()
+                db.userDao().updateNewExpense(db.userDao().getNewExpense() + newExpenseVal.toDouble())
+                newExpenseBox.setText("")
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(v.windowToken, 0)
+                return@setOnEditorActionListener true
+            }
+            false
         }
 
     }

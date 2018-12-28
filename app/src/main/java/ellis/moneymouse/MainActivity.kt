@@ -1,16 +1,13 @@
 package ellis.moneymouse
 
-import android.content.Context
+import android.arch.persistence.room.Room
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
-import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
 import java.math.BigDecimal
-import java.math.RoundingMode
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -50,25 +47,25 @@ class MainActivity : AppCompatActivity() {
 
         val cal: Calendar = Calendar.getInstance()
 
-        val incomePref = getSharedPreferences(
-            getString(R.string.saved_income_key), Context.MODE_PRIVATE) ?: return
-        val monthlyInc: String? = incomePref.getString(getString(R.string.saved_income_key), "0.00")
+        val db = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java, "MoneyMouseDB"
+        ).allowMainThreadQueries().build()
 
-        val expPref = getSharedPreferences(
-            getString(R.string.saved_expenses_key), Context.MODE_PRIVATE) ?: return
-        val monthlyExp: String? = expPref.getString(getString(R.string.saved_expenses_key), "0.00")
+        if(db.userDao().getAll().isEmpty())
+        {
+            val user = User(0,0.00,0.00,0.00,0.00)
+            db.userDao().insertOne(user)
+        }
 
-        val newMoneyPref = getSharedPreferences(
-            getString(R.string.saved_newMoney_key), Context.MODE_PRIVATE) ?: return
-        val newMoney: String? = newMoneyPref.getString(getString(R.string.saved_newMoney_key), "0.00")
+        val monthlyInc = BigDecimal(db.userDao().getMonthlyIncome()).format(2)
+        val newMoney = BigDecimal(db.userDao().getNewIncome()).format(2)
+        val monthlyExpenses = BigDecimal(db.userDao().getMonthlyExpenses()).format(2)
+        val newExpense = BigDecimal(db.userDao().getNewExpense()).format(2)
 
-        val newExpensePref = getSharedPreferences(
-            getString(R.string.saved_newExpense_key), Context.MODE_PRIVATE) ?: return
-        val newExpense: String? = newExpensePref.getString(getString(R.string.saved_newExpense_key), "0.00")
+        val newMoneyVal = ((BigDecimal(monthlyInc) - BigDecimal(monthlyExpenses)) / BigDecimal(cal.getActualMaximum(Calendar.DAY_OF_MONTH)))
 
-        val newMoneyVal = (BigDecimal(monthlyInc) - BigDecimal(monthlyExp)) / BigDecimal(cal.getActualMaximum(Calendar.DAY_OF_MONTH))
-
-        val todayMoneyVal = (BigDecimal(cal.get(Calendar.DAY_OF_MONTH)) * (newMoneyVal)) + BigDecimal(newMoney) - BigDecimal(newExpense)
+        val todayMoneyVal = ((BigDecimal(cal.get(Calendar.DAY_OF_MONTH)) * (newMoneyVal)) + BigDecimal(newMoney) - BigDecimal(newExpense))
 
         val todayMoneyValString = "$" + todayMoneyVal.toString()
 
@@ -97,5 +94,7 @@ class MainActivity : AppCompatActivity() {
         //Log.d("days in this month", cal.getActualMaximum(Calendar.DAY_OF_MONTH).toString())
 
     }
+
+    private fun BigDecimal.format(digits: Int) = java.lang.String.format("%.${digits}f", this)
 
 }

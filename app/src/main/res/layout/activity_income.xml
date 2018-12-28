@@ -24,7 +24,7 @@
             android:layout_height="56dp"
             android:inputType="numberDecimal"
             android:ems="10"
-            android:id="@+id/monthlyIncome"
+            android:id="@+id/monthlyIncomeBox"
             android:imeOptions="actionDone"
             android:layout_marginEnd="8dp" app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginRight="8dp" android:layout_marginStart="8dp"

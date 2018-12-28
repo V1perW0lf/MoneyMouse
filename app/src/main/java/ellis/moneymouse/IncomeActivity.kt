@@ -1,14 +1,16 @@
 package ellis.moneymouse
 
+import android.arch.persistence.room.Room
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.RecyclerView
-import android.view.View
+import android.view.inputmethod.EditorInfo
 import kotlinx.android.synthetic.main.activity_income.*
+import android.view.inputmethod.InputMethodManager
 import java.math.BigDecimal
+
 
 class IncomeActivity : AppCompatActivity() {
 
@@ -42,56 +44,41 @@ class IncomeActivity : AppCompatActivity() {
 
         newMoneyBox.requestFocus()
 
-        val incomePref = getSharedPreferences(
-            getString(R.string.saved_income_key), Context.MODE_PRIVATE
-        )
+        val db = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java, "MoneyMouseDB"
+        ).allowMainThreadQueries().build()
 
-        val monthlyInc = incomePref.getString(getString(R.string.saved_income_key), "0.00")
+        monthlyIncomeBox.setText(BigDecimal(db.userDao().getMonthlyIncome().toString()).format(2))
 
-        if (monthlyInc == "0.00")
+        if(monthlyIncomeBox.text.toString() == "0.0")
         {
-            monthlyIncome.setText("")
-        }
-        else
-        {
-            monthlyIncome.setText(monthlyInc)
+            monthlyIncomeBox.setText("")
         }
 
-    }
-
-    override fun onPause() {
-        super.onPause()
-
-        if(monthlyIncome.text.toString() == "")
-        {
-            monthlyIncome.setText(R.string.zero_point_zero_zero)
-        }
-
-
-        val incomePref = getSharedPreferences(
-            getString(R.string.saved_income_key), Context.MODE_PRIVATE) ?: return
-        with (incomePref.edit()) {
-            putString(getString(R.string.saved_income_key), BigDecimal(monthlyIncome.text.toString()).format(2).toString())
-            apply()
-        }
-
-        if(newMoneyBox.text.toString() == "0" || newMoneyBox.text.toString() == "" || newMoneyBox.text.toString() == "0.0" || newMoneyBox.text.toString() == "0.00")
-        {
-
-        }
-        else
-        {
-            val newMoney1Pref = getSharedPreferences(
-                getString(R.string.saved_newMoney_key), Context.MODE_PRIVATE) ?: return
-            val newMoney: String? = newMoney1Pref.getString(getString(R.string.saved_newMoney_key), "0")
-
-            val newMoney2Pref = getSharedPreferences(
-                getString(R.string.saved_newMoney_key), Context.MODE_PRIVATE) ?: return
-            with (newMoney2Pref.edit()) {
-                putString(getString(R.string.saved_newMoney_key), (BigDecimal(newMoneyBox.text.toString()) + BigDecimal(newMoney)).format(2).toString())
-                apply()
+        monthlyIncomeBox.setOnEditorActionListener { v, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                val monthlyIncomeVal = monthlyIncomeBox.text.toString()
+                db.userDao().updateMonthlyIncome(monthlyIncomeVal.toDouble())
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(v.windowToken, 0)
+                return@setOnEditorActionListener true
             }
+            false
         }
+
+        newMoneyBox.setOnEditorActionListener { v, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                val newMoneyVal = newMoneyBox.text.toString()
+                db.userDao().updateNewIncome(db.userDao().getNewIncome() + newMoneyVal.toDouble())
+                newMoneyBox.setText("")
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(v.windowToken, 0)
+                return@setOnEditorActionListener true
+            }
+            false
+        }
+
     }
 
     private fun BigDecimal.format(digits: Int) = java.lang.String.format("%.${digits}f", this)
