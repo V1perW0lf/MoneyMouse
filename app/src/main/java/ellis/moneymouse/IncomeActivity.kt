@@ -59,7 +59,9 @@ class IncomeActivity : AppCompatActivity() {
         monthlyIncomeBox.setOnEditorActionListener { v, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 val monthlyIncomeVal = monthlyIncomeBox.text.toString()
-                db.userDao().updateMonthlyIncome(monthlyIncomeVal.toDouble())
+                if(monthlyIncomeVal != "") {
+                    db.userDao().updateMonthlyIncome(monthlyIncomeVal.toDouble())
+                }
                 val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(v.windowToken, 0)
                 return@setOnEditorActionListener true
@@ -70,8 +72,10 @@ class IncomeActivity : AppCompatActivity() {
         newMoneyBox.setOnEditorActionListener { v, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 val newMoneyVal = newMoneyBox.text.toString()
-                db.userDao().updateNewIncome(db.userDao().getNewIncome() + newMoneyVal.toDouble())
-                newMoneyBox.setText("")
+                if(newMoneyVal != "") {
+                    db.userDao().updateNewIncome(db.userDao().getNewIncome() + newMoneyVal.toDouble())
+                    newMoneyBox.setText("")
+                }
                 val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(v.windowToken, 0)
                 return@setOnEditorActionListener true
