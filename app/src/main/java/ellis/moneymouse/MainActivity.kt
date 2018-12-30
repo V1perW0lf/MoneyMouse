@@ -60,13 +60,13 @@ class MainActivity : AppCompatActivity() {
             db.userDao().insertOne(user)
         }
 
-        val newMonth = 1
-        val newDay = 1
+        //val newMonth = 1
+        //val newDay = 1
 
         //If the month has changed, update it and reset new income
-        if(db.userDao().getMonth() != newMonth)
+        if(db.userDao().getMonth() != cal.get(Calendar.MONTH))
         {
-            db.userDao().updateMonth(newMonth)
+            db.userDao().updateMonth(cal.get(Calendar.MONTH))
 
             val lastDayAmount = (db.userDao().getMonthlyIncome() - db.userDao().getMonthlyExpenses()) +
                     (db.userDao().getNewIncome() - db.userDao().getNewExpense())
@@ -93,7 +93,7 @@ class MainActivity : AppCompatActivity() {
         //Calculating the money that the user is either gaining or losing each day
         val newMoneyVal = ((BigDecimal(monthlyInc) - BigDecimal(monthlyExpenses)) / BigDecimal(cal.getActualMaximum(Calendar.DAY_OF_MONTH)))
         //Calculating the money that is available today
-        val todayMoneyVal = ((BigDecimal(newDay) * (newMoneyVal)) + BigDecimal(newIncome) - BigDecimal(newExpense))
+        val todayMoneyVal = ((BigDecimal(cal.get(Calendar.DAY_OF_MONTH)) * (newMoneyVal)) + BigDecimal(newIncome) - BigDecimal(newExpense))
         //Update today money in database
         db.userDao().updateTodayMoney(todayMoneyVal.toDouble())
 
