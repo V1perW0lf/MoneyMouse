@@ -81,8 +81,8 @@ class ExpensesActivity : AppCompatActivity() {
         var adap: DataListAdapter
         adap = DataListAdapter(expenseList, dateList)
         //adap = ArrayAdapter(this, R.layout.money_mouse_list_item, R.id.dateText, list)
-        var test : ListView = findViewById(R.id.expensesList)
-        test.adapter = adap
+        //var test : ListView = findViewById(R.id.expensesList)
+        expensesList.adapter = adap
 
         monthlyExpensesBox.setText(BigDecimal(db.userDao().getMonthlyExpenses().toString()).format(2))
 
@@ -109,7 +109,7 @@ class ExpensesActivity : AppCompatActivity() {
 
                 val newExpenseVal = newExpenseBox.text.toString()
 
-                if(newExpenseVal != "") {
+                if(newExpenseVal != "" && BigDecimal(newExpenseVal).format(2) != "0.00") {
                     db.userDao().updateNewExpense(db.userDao().getNewExpense() + newExpenseVal.toDouble())
 
                     val newExpenseDB = NewExpenses(
@@ -132,11 +132,10 @@ class ExpensesActivity : AppCompatActivity() {
 
                     //adap = ArrayAdapter(this, android.R.layout.simple_list_item_1, list)
                     adap = DataListAdapter(expenseList, dateList)
-                    var test : ListView = findViewById(R.id.expensesList)
-                    test.adapter = adap
-
-                    newExpenseBox.setText("")
+                    //var test : ListView = findViewById(R.id.expensesList)
+                    expensesList.adapter = adap
                 }
+                newExpenseBox.setText("")
                 val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(v.windowToken, 0)
                 return@setOnEditorActionListener true
