@@ -6,10 +6,8 @@ import android.graphics.Color
 import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
 import kotlinx.android.synthetic.main.activity_main.*
 import java.math.BigDecimal
-import java.text.SimpleDateFormat
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -50,8 +48,6 @@ class MainActivity : AppCompatActivity() {
 
         val cal: Calendar = Calendar.getInstance()
 
-        //Log.d("is this right?: ", (simp.format(cal.time)).toString())
-
         val db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "MoneyMouseDB"
@@ -64,10 +60,13 @@ class MainActivity : AppCompatActivity() {
             db.userDao().insertOne(user)
         }
 
+        val newMonth = 1
+        val newDay = 1
+
         //If the month has changed, update it and reset new income
-        if(db.userDao().getMonth() != cal.get(Calendar.MONTH))
+        if(db.userDao().getMonth() != newMonth)
         {
-            db.userDao().updateMonth(cal.get(Calendar.MONTH))
+            db.userDao().updateMonth(newMonth)
 
             val lastDayAmount = (db.userDao().getMonthlyIncome() - db.userDao().getMonthlyExpenses()) +
                     (db.userDao().getNewIncome() - db.userDao().getNewExpense())
@@ -80,6 +79,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             db.userDao().updateNewIncome(0.00)
+
+            db.newIncomeDao().delete()
             db.newExpensesDao().delete()
         }
 
@@ -92,7 +93,7 @@ class MainActivity : AppCompatActivity() {
         //Calculating the money that the user is either gaining or losing each day
         val newMoneyVal = ((BigDecimal(monthlyInc) - BigDecimal(monthlyExpenses)) / BigDecimal(cal.getActualMaximum(Calendar.DAY_OF_MONTH)))
         //Calculating the money that is available today
-        val todayMoneyVal = ((BigDecimal(cal.get(Calendar.DAY_OF_MONTH)) * (newMoneyVal)) + BigDecimal(newIncome) - BigDecimal(newExpense))
+        val todayMoneyVal = ((BigDecimal(newDay) * (newMoneyVal)) + BigDecimal(newIncome) - BigDecimal(newExpense))
         //Update today money in database
         db.userDao().updateTodayMoney(todayMoneyVal.toDouble())
 

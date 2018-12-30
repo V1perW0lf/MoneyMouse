@@ -14,6 +14,8 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.BaseAdapter
 import android.widget.TextView
 import java.math.BigDecimal
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class IncomeActivity : AppCompatActivity() {
@@ -53,10 +55,29 @@ class IncomeActivity : AppCompatActivity() {
         //And it will be used more than monthlyIncomeBox
         newMoneyBox.requestFocus()
 
+        val cal: Calendar = Calendar.getInstance()
+
+        val dateFormatter = SimpleDateFormat("EEE MMM d", Locale.US)
+
         val db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "MoneyMouseDB"
         ).allowMainThreadQueries().build()
+
+        var incomeList: ArrayList<String> = arrayListOf()
+        var dateList : ArrayList<String> = arrayListOf()
+
+        for(i in 1..db.newIncomeDao().getLastEid()) {
+            incomeList.add("$" + BigDecimal(db.newIncomeDao().getNewIncome(i)).format(2))
+            dateList.add(db.newIncomeDao().getDate(i))
+        }
+
+        incomeList.reverse()
+        dateList.reverse()
+
+        var adapter: DataListAdapter
+        adapter = DataListAdapter(incomeList, dateList)
+        incomeListBox.adapter = adapter
 
         //Set monthlyIncomeBox to what the user last input as their income and format it properly
         monthlyIncomeBox.setText(BigDecimal(db.userDao().getMonthlyIncome().toString()).format(2))
@@ -88,11 +109,30 @@ class IncomeActivity : AppCompatActivity() {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 //Store inputted value to database
                 val newMoneyVal = newMoneyBox.text.toString()
-                if(newMoneyVal != "") {
+                if(newMoneyVal != "" && BigDecimal(newMoneyVal).format(2) != "0.00") {
                     db.userDao().updateNewIncome(db.userDao().getNewIncome() + newMoneyVal.toDouble())
-                    //Reset newMoneyBox to blank
-                    newMoneyBox.setText("")
+                    val newIncomeDB = NewIncome(
+                        db.newIncomeDao().getLastEid() + 1,
+                        newMoneyVal.toDouble(),
+                        (dateFormatter.format(cal.time)).toString()
+                    )
+                    db.newIncomeDao().insertNewIncome(newIncomeDB)
+
+                    for(i in 1..db.newIncomeDao().getLastEid()) {
+                        incomeList.add("$" + BigDecimal(db.newIncomeDao().getNewIncome(i)).format(2))
+                        dateList.add(db.newIncomeDao().getDate(i))
+                    }
+
+                    incomeList.reverse()
+                    dateList.reverse()
+
+                    adapter = DataListAdapter(incomeList, dateList)
+                    incomeListBox.adapter = adapter
                 }
+
+                //Reset newMoneyBox to blank
+                newMoneyBox.setText("")
+
                 //Closes the number pad
                 val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(v.windowToken, 0)
@@ -104,22 +144,22 @@ class IncomeActivity : AppCompatActivity() {
     }
 
     internal inner class DataListAdapter : BaseAdapter {
-        var Expense: ArrayList<String>? = arrayListOf()
+        var Income: ArrayList<String>? = arrayListOf()
         var Date: ArrayList<String>? = arrayListOf()
 
         constructor() {
-            Expense = arrayListOf()
+            Income = arrayListOf()
             Date = arrayListOf()
         }
 
         constructor(text: ArrayList<String>?, text1: ArrayList<String>?) {
-            Expense = text
+            Income = text
             Date = text1
         }
 
         override fun getCount(): Int {
             // TODO Auto-generated method stub
-            return Expense!!.size
+            return Income!!.size
         }
 
         override fun getItem(arg0: Int): Any? {
@@ -136,12 +176,12 @@ class IncomeActivity : AppCompatActivity() {
 
             val inflater = layoutInflater
             val row: View
-            row = inflater.inflate(R.layout.money_mouse_list_item, parent, false)
-            val expense: TextView
+            row = inflater.inflate(R.layout.money_mouse_income_list, parent, false)
+            val income: TextView
             val date: TextView
-            expense = row.findViewById(R.id.expenseText)
+            income = row.findViewById(R.id.expenseText)
             date = row.findViewById(R.id.dateText)
-            expense.text = Expense!![position]
+            income.text = Income!![position]
             date.text = Date!![position]
 
             return row

@@ -8,8 +8,6 @@ import android.support.design.widget.BottomNavigationView
 import android.support.v7.app.AppCompatActivity
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-//import android.widget.ArrayAdapter
-//import android.widget.SimpleAdapter
 import kotlinx.android.synthetic.main.activity_expenses.*
 import java.math.BigDecimal
 import java.util.*
@@ -18,7 +16,6 @@ import android.widget.TextView
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
-import android.widget.ListView
 import java.text.SimpleDateFormat
 
 
@@ -61,28 +58,20 @@ class ExpensesActivity : AppCompatActivity() {
             AppDatabase::class.java, "MoneyMouseDB"
         ).allowMainThreadQueries().build()
 
-        //var data = ArrayList<Map<String, String>>()
-
         var expenseList: ArrayList<String> = arrayListOf()
         var dateList : ArrayList<String> = arrayListOf()
 
         for(i in 1..db.newExpensesDao().getLastEid()) {
-            //var datum = HashMap<String, String>(2)
-            //datum.put("expense", db.newExpensesDao().getLastTenExpenses(i).toString())
-            //datum.put("date", db.newExpensesDao().getDate(i).toString())
-            //data.add(datum)
-            expenseList.add("$" + BigDecimal(db.newExpensesDao().getLastTenExpenses(i)).format(2))
-            dateList.add(db.newExpensesDao().getDate(i).toString())
+            expenseList.add("$" + BigDecimal(db.newExpensesDao().getNewExpenses(i)).format(2))
+            dateList.add(db.newExpensesDao().getDate(i))
         }
 
         expenseList.reverse()
         dateList.reverse()
 
-        var adap: DataListAdapter
-        adap = DataListAdapter(expenseList, dateList)
-        //adap = ArrayAdapter(this, R.layout.money_mouse_list_item, R.id.dateText, list)
-        //var test : ListView = findViewById(R.id.expensesList)
-        expensesList.adapter = adap
+        var adapter: DataListAdapter
+        adapter = DataListAdapter(expenseList, dateList)
+        expensesListBox.adapter = adapter
 
         monthlyExpensesBox.setText(BigDecimal(db.userDao().getMonthlyExpenses().toString()).format(2))
 
@@ -123,17 +112,15 @@ class ExpensesActivity : AppCompatActivity() {
                     dateList = arrayListOf()
 
                     for (i in 1..db.newExpensesDao().getLastEid()) {
-                        expenseList.add("$" + BigDecimal(db.newExpensesDao().getLastTenExpenses(i)).format(2))
+                        expenseList.add("$" + BigDecimal(db.newExpensesDao().getNewExpenses(i)).format(2))
                         dateList.add(db.newExpensesDao().getDate(i))
                     }
 
                     expenseList.reverse()
                     dateList.reverse()
 
-                    //adap = ArrayAdapter(this, android.R.layout.simple_list_item_1, list)
-                    adap = DataListAdapter(expenseList, dateList)
-                    //var test : ListView = findViewById(R.id.expensesList)
-                    expensesList.adapter = adap
+                    adapter = DataListAdapter(expenseList, dateList)
+                    expensesListBox.adapter = adapter
                 }
                 newExpenseBox.setText("")
                 val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -178,7 +165,7 @@ class ExpensesActivity : AppCompatActivity() {
 
             val inflater = layoutInflater
             val row: View
-            row = inflater.inflate(R.layout.money_mouse_list_item, parent, false)
+            row = inflater.inflate(R.layout.money_mouse_expense_list, parent, false)
             val expense: TextView
             val date: TextView
             expense = row.findViewById(R.id.expenseText)

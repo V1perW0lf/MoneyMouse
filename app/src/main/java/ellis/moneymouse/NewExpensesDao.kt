@@ -10,7 +10,7 @@ interface NewExpensesDao {
     fun insertNewExpense(vararg: NewExpenses)
 
     @Query("SELECT newExpense FROM newexpenses WHERE eid = :id")
-    fun getLastTenExpenses(id: Int) : Double
+    fun getNewExpenses(id: Int) : Double
 
     @Query("SELECT date FROM newexpenses WHERE eid = :id")
     fun getDate(id: Int) : String
