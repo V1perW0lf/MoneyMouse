@@ -8,13 +8,19 @@ import android.support.design.widget.BottomNavigationView
 import android.support.v7.app.AppCompatActivity
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import android.widget.ArrayAdapter
-import android.widget.SimpleAdapter
+//import android.widget.ArrayAdapter
+//import android.widget.SimpleAdapter
 import kotlinx.android.synthetic.main.activity_expenses.*
 import java.math.BigDecimal
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
+import android.widget.TextView
+import android.view.View
+import android.view.ViewGroup
+import android.widget.BaseAdapter
+import android.widget.ListView
+import java.text.SimpleDateFormat
+
 
 class ExpensesActivity : AppCompatActivity() {
 
@@ -22,13 +28,11 @@ class ExpensesActivity : AppCompatActivity() {
         when (item.itemId) {
             R.id.navigation_home -> {
                 val intent = Intent(this, MainActivity::class.java)
-                //intent.putExtra("income", value)
                 startActivity(intent)
                 return@OnNavigationItemSelectedListener true
             }
             R.id.navigation_income -> {
                 val intent = Intent(this, IncomeActivity::class.java)
-                //intent.putExtra("income", value)
                 startActivity(intent)
                 return@OnNavigationItemSelectedListener true
             }
@@ -50,6 +54,8 @@ class ExpensesActivity : AppCompatActivity() {
 
         val cal: Calendar = Calendar.getInstance()
 
+        val dateFormatter = SimpleDateFormat("EEE MMM d", Locale.US)
+
         val db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "MoneyMouseDB"
@@ -57,31 +63,35 @@ class ExpensesActivity : AppCompatActivity() {
 
         //var data = ArrayList<Map<String, String>>()
 
-        var list: ArrayList<String> = arrayListOf()
+        var expenseList: ArrayList<String> = arrayListOf()
+        var dateList : ArrayList<String> = arrayListOf()
 
         for(i in 1..db.newExpensesDao().getLastEid()) {
-            var datum = HashMap<String, String>(2)
+            //var datum = HashMap<String, String>(2)
             //datum.put("expense", db.newExpensesDao().getLastTenExpenses(i).toString())
             //datum.put("date", db.newExpensesDao().getDate(i).toString())
             //data.add(datum)
-            list.add(db.newExpensesDao().getLastTenExpenses(i).toString())
+            expenseList.add("$" + BigDecimal(db.newExpensesDao().getLastTenExpenses(i)).format(2))
+            dateList.add(db.newExpensesDao().getDate(i).toString())
         }
 
-        list.reverse()
+        expenseList.reverse()
+        dateList.reverse()
 
-        var adap: ArrayAdapter<String>
-        adap = ArrayAdapter(this, android.R.layout.simple_list_item_1, list)
-        //adap = SimpleAdapter(this, data, android.R.layout.simple_list_item_2, Array<String>(0, {i -> ""}), IntArray(android.R.id.text1, {android.R.id.text2}))
-        expensesList.adapter = adap
+        var adap: DataListAdapter
+        adap = DataListAdapter(expenseList, dateList)
+        //adap = ArrayAdapter(this, R.layout.money_mouse_list_item, R.id.dateText, list)
+        var test : ListView = findViewById(R.id.expensesList)
+        test.adapter = adap
 
         monthlyExpensesBox.setText(BigDecimal(db.userDao().getMonthlyExpenses().toString()).format(2))
 
-        if(monthlyExpensesBox.text.toString() == "0.0")
+        if(monthlyExpensesBox.text.toString() == "0.00")
         {
             monthlyExpensesBox.setText("")
         }
 
-        monthlyExpensesBox.setOnEditorActionListener { v, actionId, event ->
+        monthlyExpensesBox.setOnEditorActionListener { v, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 val monthlyExpensesVal = monthlyExpensesBox.text.toString()
                 if(monthlyExpensesVal != "") {
@@ -94,7 +104,7 @@ class ExpensesActivity : AppCompatActivity() {
             false
         }
 
-        newExpenseBox.setOnEditorActionListener { v, actionId, event ->
+        newExpenseBox.setOnEditorActionListener { v, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
 
                 val newExpenseVal = newExpenseBox.text.toString()
@@ -105,20 +115,25 @@ class ExpensesActivity : AppCompatActivity() {
                     val newExpenseDB = NewExpenses(
                         db.newExpensesDao().getLastEid() + 1,
                         newExpenseVal.toDouble(),
-                        cal.get(Calendar.DATE).toString()
+                        (dateFormatter.format(cal.time)).toString()
                     )
                     db.newExpensesDao().insertNewExpense(newExpenseDB)
 
-                    list = arrayListOf()
+                    expenseList = arrayListOf()
+                    dateList = arrayListOf()
 
                     for (i in 1..db.newExpensesDao().getLastEid()) {
-                        list.add(BigDecimal(db.newExpensesDao().getLastTenExpenses(i)).format(2))
+                        expenseList.add("$" + BigDecimal(db.newExpensesDao().getLastTenExpenses(i)).format(2))
+                        dateList.add(db.newExpensesDao().getDate(i))
                     }
 
-                    list.reverse()
+                    expenseList.reverse()
+                    dateList.reverse()
 
-                    adap = ArrayAdapter(this, android.R.layout.simple_list_item_1, list)
-                    expensesList.adapter = adap
+                    //adap = ArrayAdapter(this, android.R.layout.simple_list_item_1, list)
+                    adap = DataListAdapter(expenseList, dateList)
+                    var test : ListView = findViewById(R.id.expensesList)
+                    test.adapter = adap
 
                     newExpenseBox.setText("")
                 }
@@ -129,6 +144,51 @@ class ExpensesActivity : AppCompatActivity() {
             false
         }
 
+    }
+
+    internal inner class DataListAdapter : BaseAdapter {
+        var Expense: ArrayList<String>? = arrayListOf()
+        var Date: ArrayList<String>? = arrayListOf()
+
+        constructor() {
+            Expense = arrayListOf()
+            Date = arrayListOf()
+        }
+
+        constructor(text: ArrayList<String>?, text1: ArrayList<String>?) {
+            Expense = text
+            Date = text1
+        }
+
+        override fun getCount(): Int {
+            // TODO Auto-generated method stub
+            return Expense!!.size
+        }
+
+        override fun getItem(arg0: Int): Any? {
+            // TODO Auto-generated method stub
+            return null
+        }
+
+        override fun getItemId(position: Int): Long {
+            // TODO Auto-generated method stub
+            return position.toLong()
+        }
+
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
+
+            val inflater = layoutInflater
+            val row: View
+            row = inflater.inflate(R.layout.money_mouse_list_item, parent, false)
+            val expense: TextView
+            val date: TextView
+            expense = row.findViewById(R.id.expenseText)
+            date = row.findViewById(R.id.dateText)
+            expense.text = Expense!![position]
+            date.text = Date!![position]
+
+            return row
+        }
     }
 
     private fun BigDecimal.format(digits: Int) = java.lang.String.format("%.${digits}f", this)

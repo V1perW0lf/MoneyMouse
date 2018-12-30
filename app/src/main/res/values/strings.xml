@@ -16,10 +16,10 @@
 
     <string name="monthlyExpenses">Monthly Expenses</string>
 
+    <string name="main_message_todayMoney">%1$s</string>
     <string name="main_message_gaining">Gaining %1$s per day</string>
     <string name="main_message_losing">Losing %1$s per day</string>
 
     <string name="zero_point_zero_zero">0.00</string>
-
 
 </resources>

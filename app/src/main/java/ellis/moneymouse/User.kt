@@ -10,5 +10,7 @@ data class User(
     @ColumnInfo(name = "monthlyIncome") var monthlyIncome: Double?,
     @ColumnInfo(name = "monthlyExpenses") var monthlyExpenses: Double?,
     @ColumnInfo(name = "newIncome") var newIncome: Double?,
-    @ColumnInfo(name = "newExpense") var newExpense: Double?
+    @ColumnInfo(name = "newExpense") var newExpense: Double?,
+    @ColumnInfo(name = "todayMoney") var todayMoney: Double?,
+    @ColumnInfo(name = "month") var month: Int?
 )

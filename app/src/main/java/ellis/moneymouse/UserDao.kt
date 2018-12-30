@@ -1,7 +1,6 @@
 package ellis.moneymouse
 
 import android.arch.persistence.room.Dao
-import android.arch.persistence.room.Delete
 import android.arch.persistence.room.Insert
 import android.arch.persistence.room.Query
 
@@ -30,6 +29,18 @@ interface UserDao {
 
     @Query("SELECT newExpense FROM user where uid = 0")
     fun getNewExpense() : Double
+
+    @Query("UPDATE user SET todayMoney = :todayMon WHERE uid = 0")
+    fun updateTodayMoney(todayMon: Double)
+
+    @Query("SELECT todayMoney FROM user where uid = 0")
+    fun getTodayMoney() : Double
+
+    @Query("UPDATE user SET month = :newMonth WHERE uid = 0")
+    fun updateMonth(newMonth: Int)
+
+    @Query("SELECT month FROM user where uid = 0")
+    fun getMonth() : Int
 
     @Insert
     fun insertOne(vararg users: User)
