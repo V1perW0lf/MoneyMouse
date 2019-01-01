@@ -110,13 +110,18 @@ class IncomeActivity : AppCompatActivity() {
                 //Store inputted value to database
                 val newMoneyVal = newMoneyBox.text.toString()
                 if(newMoneyVal != "" && BigDecimal(newMoneyVal).format(2) != "0.00") {
+
                     db.userDao().updateNewIncome(db.userDao().getNewIncome() + newMoneyVal.toDouble())
+
                     val newIncomeDB = NewIncome(
                         db.newIncomeDao().getLastEid() + 1,
                         newMoneyVal.toDouble(),
                         (dateFormatter.format(cal.time)).toString()
                     )
                     db.newIncomeDao().insertNewIncome(newIncomeDB)
+
+                    incomeList = arrayListOf()
+                    dateList = arrayListOf()
 
                     for(i in 1..db.newIncomeDao().getLastEid()) {
                         incomeList.add("$" + BigDecimal(db.newIncomeDao().getNewIncome(i)).format(2))
@@ -179,7 +184,7 @@ class IncomeActivity : AppCompatActivity() {
             row = inflater.inflate(R.layout.money_mouse_income_list, parent, false)
             val income: TextView
             val date: TextView
-            income = row.findViewById(R.id.expenseText)
+            income = row.findViewById(R.id.incomeText)
             date = row.findViewById(R.id.dateText)
             income.text = Income!![position]
             date.text = Date!![position]
