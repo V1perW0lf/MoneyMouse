@@ -17,7 +17,6 @@ import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.*
 
-
 class IncomeActivity : AppCompatActivity() {
 
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
@@ -52,11 +51,16 @@ class IncomeActivity : AppCompatActivity() {
         navigation.selectedItemId = R.id.navigation_income
 
         //Request focus here because it wouldn't default to it for some reason
-        //And it will be used more than monthlyIncomeBox
+        //And because it will be used more than monthlyIncomeBox
         newMoneyBox.requestFocus()
 
+        income()
+    }
+
+    private fun income() {
         val cal: Calendar = Calendar.getInstance()
 
+        //Format looks like this: Mon Jan 23
         val dateFormatter = SimpleDateFormat("EEE MMM d", Locale.US)
 
         val db = Room.databaseBuilder(
@@ -67,14 +71,17 @@ class IncomeActivity : AppCompatActivity() {
         var incomeList: ArrayList<String> = arrayListOf()
         var dateList : ArrayList<String> = arrayListOf()
 
+        //Populate list view with recently entered incomes and dates for each income
         for(i in 1..db.newIncomeDao().getLastEid()) {
             incomeList.add("$" + BigDecimal(db.newIncomeDao().getNewIncome(i)).format(2))
             dateList.add(db.newIncomeDao().getDate(i))
         }
 
+        //Reverse lists so newest entries are viewed first
         incomeList.reverse()
         dateList.reverse()
 
+        //Create custom adapter for list view; found at end of code
         var adapter: DataListAdapter
         adapter = DataListAdapter(incomeList, dateList)
         incomeListBox.adapter = adapter
@@ -107,10 +114,11 @@ class IncomeActivity : AppCompatActivity() {
         //Defines what happens after user presses the check or "enter" button to input their value
         newMoneyBox.setOnEditorActionListener { v, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                //Store inputted value to database
+
                 val newMoneyVal = newMoneyBox.text.toString()
                 if(newMoneyVal != "" && BigDecimal(newMoneyVal).format(2) != "0.00") {
 
+                    //Store inputted value to database
                     db.userDao().updateNewIncome(db.userDao().getNewIncome() + newMoneyVal.toDouble())
 
                     val newIncomeDB = NewIncome(
@@ -120,6 +128,7 @@ class IncomeActivity : AppCompatActivity() {
                     )
                     db.newIncomeDao().insertNewIncome(newIncomeDB)
 
+                    //Reset lists in order to show updated income list
                     incomeList = arrayListOf()
                     dateList = arrayListOf()
 
@@ -145,26 +154,25 @@ class IncomeActivity : AppCompatActivity() {
             }
             false
         }
-
     }
 
     internal inner class DataListAdapter : BaseAdapter {
-        var Income: ArrayList<String>? = arrayListOf()
-        var Date: ArrayList<String>? = arrayListOf()
+        var incomeList: ArrayList<String>? = arrayListOf()
+        var dateList: ArrayList<String>? = arrayListOf()
 
         constructor() {
-            Income = arrayListOf()
-            Date = arrayListOf()
+            incomeList = arrayListOf()
+            dateList = arrayListOf()
         }
 
         constructor(text: ArrayList<String>?, text1: ArrayList<String>?) {
-            Income = text
-            Date = text1
+            incomeList = text
+            dateList = text1
         }
 
         override fun getCount(): Int {
             // TODO Auto-generated method stub
-            return Income!!.size
+            return incomeList!!.size
         }
 
         override fun getItem(arg0: Int): Any? {
@@ -179,18 +187,28 @@ class IncomeActivity : AppCompatActivity() {
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
 
+            val row : View
             val inflater = layoutInflater
-            val row: View
-            row = inflater.inflate(R.layout.money_mouse_income_list, parent, false)
-            val income: TextView
-            val date: TextView
-            income = row.findViewById(R.id.incomeText)
-            date = row.findViewById(R.id.dateText)
-            income.text = Income!![position]
-            date.text = Date!![position]
 
-            return row
+            if(convertView == null) {
+                row = inflater.inflate(R.layout.money_mouse_income_list, parent, false)
+                val income: TextView = row.findViewById(R.id.incomeText)
+                val date: TextView = row.findViewById(R.id.dateText)
+                income.text = incomeList!![position]
+                date.text = dateList!![position]
+                return row
+            }
+            else {
+                row = convertView
+                val income: TextView = row.findViewById(R.id.incomeText)
+                val date: TextView = row.findViewById(R.id.dateText)
+                income.text = incomeList!![position]
+                date.text = dateList!![position]
+                return row
+            }
+
         }
+
     }
 
     //Function used to force numbers to be formatted with two spots after decimal place

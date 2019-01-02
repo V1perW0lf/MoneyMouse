@@ -60,6 +60,7 @@ class MainActivity : AppCompatActivity() {
             db.userDao().insertOne(user)
         }
 
+        //Used to test when month changes
         //val newMonth = 1
         //val newDay = 1
 
@@ -68,9 +69,11 @@ class MainActivity : AppCompatActivity() {
         {
             db.userDao().updateMonth(cal.get(Calendar.MONTH))
 
+            //Calculate how much user has on last day of last month
             val lastDayAmount = (db.userDao().getMonthlyIncome() - db.userDao().getMonthlyExpenses()) +
                     (db.userDao().getNewIncome() - db.userDao().getNewExpense())
 
+            //If they are in the red, keep that amount into the next month; otherwise reset to zero
             if(lastDayAmount < 0) {
                 db.userDao().updateNewExpense(lastDayAmount * -1)
             }
@@ -78,8 +81,10 @@ class MainActivity : AppCompatActivity() {
                 db.userDao().updateNewExpense(0.00)
             }
 
+            //New income will always reset to zero
             db.userDao().updateNewIncome(0.00)
 
+            //Delete the new income and new expense lists
             db.newIncomeDao().delete()
             db.newExpensesDao().delete()
         }
