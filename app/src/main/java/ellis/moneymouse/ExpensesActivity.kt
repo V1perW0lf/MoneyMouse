@@ -149,8 +149,8 @@ class ExpensesActivity : AppCompatActivity() {
     }
 
     internal inner class DataListAdapter : BaseAdapter {
-        var expenseList: ArrayList<String>? = arrayListOf()
-        var dateList: ArrayList<String>? = arrayListOf()
+        private var expenseList: ArrayList<String>? = arrayListOf()
+        private var dateList: ArrayList<String>? = arrayListOf()
 
         constructor() {
             expenseList = arrayListOf()

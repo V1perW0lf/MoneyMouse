@@ -150,8 +150,8 @@ class IncomeActivity : AppCompatActivity() {
     }
 
     internal inner class DataListAdapter : BaseAdapter {
-        var incomeList: ArrayList<String>? = arrayListOf()
-        var dateList: ArrayList<String>? = arrayListOf()
+        private var incomeList: ArrayList<String>? = arrayListOf()
+        private var dateList: ArrayList<String>? = arrayListOf()
 
         constructor() {
             incomeList = arrayListOf()
