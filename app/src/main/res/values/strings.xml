@@ -5,11 +5,6 @@
     <string name="title_income">Income</string>
     <string name="title_expenses">Expenses</string>
 
-    <string name="saved_income_key">saved_income_key</string>
-    <string name="saved_expenses_key">saved_expenses_key</string>
-    <string name="saved_newMoney_key">saved_newMoney_key</string>
-    <string name="saved_newExpense_key">saved_newExpense_key</string>
-
     <string name="monthlyIncome">Monthly Income</string>
     <string name="newMoney">New Money</string>
     <string name="newExpense">New Expense</string>
@@ -19,7 +14,5 @@
     <string name="main_message_todayMoney">%1$s</string>
     <string name="main_message_gaining">Gaining %1$s per day</string>
     <string name="main_message_losing">Losing %1$s per day</string>
-
-    <string name="zero_point_zero_zero">0.00</string>
 
 </resources>
