@@ -65,23 +65,8 @@ class ExpensesActivity : AppCompatActivity() {
             AppDatabase::class.java, "MoneyMouseDB"
         ).allowMainThreadQueries().build()
 
-        var expenseList: ArrayList<String> = arrayListOf()
-        var dateList : ArrayList<String> = arrayListOf()
-
-        //Populate list view with recently entered expenses and dates for each income
-        for(i in 1..db.newExpensesDao().getLastEid()) {
-            expenseList.add("$" + BigDecimal(db.newExpensesDao().getNewExpenses(i)).format(2))
-            dateList.add(db.newExpensesDao().getDate(i))
-        }
-
-        //Reverse lists so newest entries are viewed first
-        expenseList.reverse()
-        dateList.reverse()
-
-        //Create custom adapter for list view; found at end of code
-        var adapter: DataListAdapter
-        adapter = DataListAdapter(expenseList, dateList)
-        expensesListBox.adapter = adapter
+        //Create and display expense list
+        lists(db)
 
         //Set monthlyExpensesBox to what the user last input as their expenses and format it properly
         monthlyExpensesBox.setText(BigDecimal(db.userDao().getMonthlyExpenses().toString()).format(2))
@@ -127,19 +112,7 @@ class ExpensesActivity : AppCompatActivity() {
                     db.newExpensesDao().insertNewExpense(newExpenseDB)
 
                     //Reset lists in order to show updated income list
-                    expenseList = arrayListOf()
-                    dateList = arrayListOf()
-
-                    for (i in 1..db.newExpensesDao().getLastEid()) {
-                        expenseList.add("$" + BigDecimal(db.newExpensesDao().getNewExpenses(i)).format(2))
-                        dateList.add(db.newExpensesDao().getDate(i))
-                    }
-
-                    expenseList.reverse()
-                    dateList.reverse()
-
-                    adapter = DataListAdapter(expenseList, dateList)
-                    expensesListBox.adapter = adapter
+                    lists(db)
                 }
                 //Reset newExpenseBox to blank
                 newExpenseBox.setText("")
@@ -151,6 +124,28 @@ class ExpensesActivity : AppCompatActivity() {
             }
             false
         }
+    }
+
+    private fun lists(db: AppDatabase) {
+
+        val expenseList: ArrayList<String> = arrayListOf()
+        val dateList : ArrayList<String> = arrayListOf()
+
+        //Populate list view with recently entered expenses and dates for each income
+        for(i in 1..db.newExpensesDao().getLastEid()) {
+            expenseList.add("$" + BigDecimal(db.newExpensesDao().getNewExpenses(i)).format(2))
+            dateList.add(db.newExpensesDao().getDate(i))
+        }
+
+        //Reverse lists so newest entries are viewed first
+        expenseList.reverse()
+        dateList.reverse()
+
+        //Create custom adapter for list view; found at end of code
+        val adapter: DataListAdapter
+        adapter = DataListAdapter(expenseList, dateList)
+        expensesListBox.adapter = adapter
+
     }
 
     internal inner class DataListAdapter : BaseAdapter {

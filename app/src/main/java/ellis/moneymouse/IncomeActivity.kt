@@ -68,23 +68,8 @@ class IncomeActivity : AppCompatActivity() {
             AppDatabase::class.java, "MoneyMouseDB"
         ).allowMainThreadQueries().build()
 
-        var incomeList: ArrayList<String> = arrayListOf()
-        var dateList : ArrayList<String> = arrayListOf()
-
-        //Populate list view with recently entered incomes and dates for each income
-        for(i in 1..db.newIncomeDao().getLastEid()) {
-            incomeList.add("$" + BigDecimal(db.newIncomeDao().getNewIncome(i)).format(2))
-            dateList.add(db.newIncomeDao().getDate(i))
-        }
-
-        //Reverse lists so newest entries are viewed first
-        incomeList.reverse()
-        dateList.reverse()
-
-        //Create custom adapter for list view; found at end of code
-        var adapter: DataListAdapter
-        adapter = DataListAdapter(incomeList, dateList)
-        incomeListBox.adapter = adapter
+        //Create and display new income list
+        lists(db)
 
         //Set monthlyIncomeBox to what the user last input as their income and format it properly
         monthlyIncomeBox.setText(BigDecimal(db.userDao().getMonthlyIncome().toString()).format(2))
@@ -129,19 +114,7 @@ class IncomeActivity : AppCompatActivity() {
                     db.newIncomeDao().insertNewIncome(newIncomeDB)
 
                     //Reset lists in order to show updated income list
-                    incomeList = arrayListOf()
-                    dateList = arrayListOf()
-
-                    for(i in 1..db.newIncomeDao().getLastEid()) {
-                        incomeList.add("$" + BigDecimal(db.newIncomeDao().getNewIncome(i)).format(2))
-                        dateList.add(db.newIncomeDao().getDate(i))
-                    }
-
-                    incomeList.reverse()
-                    dateList.reverse()
-
-                    adapter = DataListAdapter(incomeList, dateList)
-                    incomeListBox.adapter = adapter
+                    lists(db)
                 }
 
                 //Reset newMoneyBox to blank
@@ -154,6 +127,26 @@ class IncomeActivity : AppCompatActivity() {
             }
             false
         }
+    }
+
+    private fun lists(db: AppDatabase) {
+        val incomeList: ArrayList<String> = arrayListOf()
+        val dateList : ArrayList<String> = arrayListOf()
+
+        //Populate list view with recently entered incomes and dates for each income
+        for(i in 1..db.newIncomeDao().getLastEid()) {
+            incomeList.add("$" + BigDecimal(db.newIncomeDao().getNewIncome(i)).format(2))
+            dateList.add(db.newIncomeDao().getDate(i))
+        }
+
+        //Reverse lists so newest entries are viewed first
+        incomeList.reverse()
+        dateList.reverse()
+
+        //Create custom adapter for list view; found at end of code
+        val adapter: DataListAdapter
+        adapter = DataListAdapter(incomeList, dateList)
+        incomeListBox.adapter = adapter
     }
 
     internal inner class DataListAdapter : BaseAdapter {
